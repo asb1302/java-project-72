@@ -1,37 +1,37 @@
 package hexlet.code;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-import java.nio.charset.StandardCharsets;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
-import lombok.extern.slf4j.Slf4j;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@Slf4j
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
+import io.javalin.Javalin;
+
+
 class AppTest {
-    private final PrintStream standardOut = System.out;
-    private final ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-    @BeforeEach
-    public void setUp() {
-        System.setOut(new PrintStream(output));
+    private static Javalin app;
+    private static String baseUrl;
+
+    @BeforeAll
+    public static void beforeAll() {
+        app = App.getApp();
+        app.start(0);
+        int port = app.port();
+        baseUrl = "http://localhost:" + port;
+    }
+
+    @AfterAll
+    public static void afterAll() {
+        app.stop();
     }
 
     @Test
-    @DisplayName("'main' method works correctly")
-    void testMain() {
-        App.main(null);
-        assertEquals("Hello, World!", output.toString(StandardCharsets.UTF_8).trim());
-    }
-
-    @AfterEach
-    public void tearDown() {
-        System.setOut(standardOut);
+    void testRoot() {
+        HttpResponse<String> response = Unirest.get(baseUrl).asString();
+        assertThat(response.getStatus()).isEqualTo(200);
     }
 }
