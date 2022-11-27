@@ -10,10 +10,10 @@ install:
 	./gradlew clean install
 
 run-dist:
-	./build/install/app/bin/app
+	APP_ENV=production ./build/install/app/bin/app
 
 run:
-	./gradlew run
+	APP_ENV=development ./gradlew run
 
 test:
 	./gradlew test
@@ -26,6 +26,9 @@ lint:
 
 update-deps:
 	./gradlew useLatestVersions
+
+generate-migrations:
+	./gradlew generateMigrations
 
 
 build-run: build run

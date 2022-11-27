@@ -4,4 +4,4 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/43ee23a0c3cb99d89575/test_coverage)](https://codeclimate.com/github/asb1302/java-project-72/test_coverage)
 
 ### App
-[link!](https://asb1302-heroku-project72.herokuapp.com/)
+[link!](https://java-project-72-production-0b4a.up.railway.app/)
