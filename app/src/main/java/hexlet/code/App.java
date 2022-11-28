@@ -25,6 +25,7 @@ public final class App {
             if (!isProduction()) {
                 config.enableDevLogging();
             }
+            config.enableWebjars();
 
             JavalinThymeleaf.configure(getTemplateEngine());
         });

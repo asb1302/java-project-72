@@ -27,6 +27,8 @@ lint:
 update-deps:
 	make -C app update-deps
 
+generate-migrations:
+	make -C app generate-migrations
 
 build-run: build run
 
