@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+layout:decorate="~{layouts/application.html}">
+
+<head>
+  <title>New url</title>
+</head>
+
+<div class="invalid-feedback" layout:fragment="validation-errors">
+  <ul>
+    <li th:each="error : ${#object}" th:text="${error.getMessage()}"></li>
+  </ul>
+</div>
+
+<section layout:fragment="content">
+  <h1>Create new url</h1>
+  <form th:object="${url}" action="/urls" method="post">
+    <div class="mb-3">
+      <labe>URL</labe>
+      <input
+        class="form-control" th:classappend="${errors.url}? 'is-invalid'"
+        type="text" name="url" th:value="*{url}"
+      >
+      <div layout:fragment="validation-errors" th:object="${errors.url}"></div>
+    </div>
+    <button class="btn btn-primary" type="submit">Add</button>
+  </form>
+</section>

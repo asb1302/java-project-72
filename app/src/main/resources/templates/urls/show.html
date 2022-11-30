@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/application.html}">
+
+  <section layout:fragment="header">
+    Show url
+  </section>
+
+  <section layout:fragment="content" th:object="${url}">
+    <div class="card">
+      <div class="card-body bg-light">
+        <p class="lead" th:text="${url.getName()}"></p>
+      </div>
+  </section>
+
+</html>
