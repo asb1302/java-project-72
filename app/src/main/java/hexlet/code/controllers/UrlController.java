@@ -2,13 +2,11 @@ package hexlet.code.controllers;
 
 import hexlet.code.domain.Url;
 import hexlet.code.domain.query.QUrl;
-import io.javalin.core.util.JavalinLogger;
 import io.javalin.core.validation.JavalinValidation;
 import io.javalin.core.validation.ValidationError;
 import io.javalin.core.validation.Validator;
 import io.javalin.http.Handler;
 import io.javalin.http.NotFoundResponse;
-import org.apache.commons.lang3.StringUtils;
 
 import java.net.URL;
 import java.util.List;

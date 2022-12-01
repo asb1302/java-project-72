@@ -61,7 +61,7 @@ class AppTest {
 
     @Test
     void testCreateUser() {
-            String url = "https://stackoverflow.com";
+        String url = "https://stackoverflow.com";
 
         HttpResponse<String> responsePost = Unirest
                 .post(baseUrl + "/urls")
