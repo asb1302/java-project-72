@@ -1,7 +1,11 @@
 package hexlet.code.controllers;
 
 import hexlet.code.domain.Url;
+import hexlet.code.domain.UrlCheck;
+import hexlet.code.domain.UrlCheckResponse;
 import hexlet.code.domain.query.QUrl;
+import hexlet.code.domain.query.QUrlCheck;
+import hexlet.code.service.UrlCheckServiceImpl;
 import io.javalin.core.validation.JavalinValidation;
 import io.javalin.core.validation.ValidationError;
 import io.javalin.core.validation.Validator;
@@ -24,18 +28,11 @@ public class UrlController {
         ctx.render("urls/index.html");
     };
 
-    public static Handler newUrl = ctx -> {
-        ctx.attribute("errors", Map.of());
-        ctx.attribute("url", Map.of());
-        ctx.render("urls/new.html");
-    };
-
     public static Handler createUrl = ctx -> {
         String urlValue = ctx.formParam("url");
 
 
         Validator<String> urlValidator = ctx.formParamAsClass("url", String.class)
-                // Добавляем проверку, что имя не должно быть пустым
                 .check(it -> !it.isEmpty(), "url не должно быть пустым");
 
         Map<String, List<ValidationError<? extends Object>>> errors = JavalinValidation.collectErrors(
@@ -43,9 +40,7 @@ public class UrlController {
         );
 
         if (!errors.isEmpty()) {
-            // Устанавливаем код ответа
             ctx.status(422);
-            // Передаем ошибки и данные компании
             ctx.attribute("errors", errors);
             Url invalidUrl = new Url(urlValue);
             ctx.attribute("url", invalidUrl);
@@ -55,14 +50,15 @@ public class UrlController {
 
         try {
             URL urlParser = new URL(urlValue);
-            String newName = urlParser.getProtocol() + "://"  + urlParser.getAuthority();
+            String newName = urlParser.getProtocol() + "://" + urlParser.getAuthority();
 
             Url existedUrl = new QUrl()
                     .name.equalTo(newName)
                     .findOne();
 
             if (null != existedUrl) {
-                ctx.sessionAttribute("flash", "Url already existed!");
+                ctx.sessionAttribute("flash", "Сайт уже добавлен!");
+                ctx.sessionAttribute("flash-type", "danger");
                 ctx.redirect("/urls");
                 return;
             }
@@ -70,12 +66,14 @@ public class UrlController {
             Url url = new Url(newName);
             url.save();
         } catch (Exception exception) {
-            ctx.sessionAttribute("flash", "Incorrect URL");
+            ctx.sessionAttribute("flash", "Некорректный сайт!");
+            ctx.sessionAttribute("flash-type", "danger");
             ctx.redirect("/urls");
             return;
         }
 
-        ctx.sessionAttribute("flash", "Url added successfully");
+        ctx.sessionAttribute("flash", "Сайт добавлен!");
+        ctx.sessionAttribute("flash-type", "success");
         ctx.redirect("/urls");
     };
 
@@ -92,5 +90,42 @@ public class UrlController {
 
         ctx.attribute("url", url);
         ctx.render("urls/show.html");
+    };
+
+    public static Handler checks = ctx -> {
+        int id = ctx.pathParamAsClass("id", Integer.class).getOrDefault(null);
+
+        Url url = new QUrl()
+                .id.equalTo(id)
+                .findOne();
+
+        if (url == null) {
+            throw new NotFoundResponse();
+        }
+
+        try {
+            UrlCheckResponse urlCheckResponse = new UrlCheckServiceImpl().check(url.getName());
+
+            UrlCheck urlCheck = new UrlCheck(
+                    urlCheckResponse.statusCode,
+                    urlCheckResponse.title,
+                    urlCheckResponse.h1,
+                    urlCheckResponse.description,
+                    url
+            );
+            urlCheck.save();
+
+            List<UrlCheck> urlChecks = new QUrlCheck()
+                    .url.equalTo(url)
+                    .findList();
+
+            ctx.attribute("url", url);
+            ctx.attribute("urlChecks", urlChecks);
+            ctx.render("urls/show.html");
+        } catch (Exception e) {
+            ctx.sessionAttribute("flash", "Произошла ошибка при проверке сайта!");
+            ctx.sessionAttribute("flash-type", "danger");
+            ctx.redirect("/urls");
+        }
     };
 }

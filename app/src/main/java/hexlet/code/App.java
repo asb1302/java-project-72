@@ -52,6 +52,7 @@ public final class App {
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setPrefix("/templates/");
+        templateResolver.setCharacterEncoding("UTF-8");
         templateEngine.addTemplateResolver(templateResolver);
 
         return templateEngine;
@@ -71,10 +72,10 @@ public final class App {
         app.routes(() -> {
             path("urls", () -> {
                 get(UrlController.listUrls);
-                get("new", UrlController.newUrl);
                 post(UrlController.createUrl);
                 path("{id}", () -> {
                     get(UrlController.showUrl);
+                    post("checks", UrlController.checks);
                 });
             });
         });
