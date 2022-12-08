@@ -97,7 +97,7 @@ public class UrlController {
             return;
         }
 
-        ctx.sessionAttribute("flash", "Сайт добавлен!");
+        ctx.sessionAttribute("flash", "Страница успешно добавлена");
         ctx.sessionAttribute("flash-type", "success");
         ctx.redirect("/urls");
     };
@@ -165,6 +165,8 @@ public class UrlController {
             );
             urlCheck.save();
 
+            ctx.sessionAttribute("flash", "Страница успешно проверена");
+            ctx.sessionAttribute("flash-type", "success");
             ctx.redirect("/urls/" + url.getId());
         } catch (Exception e) {
             ctx.sessionAttribute("flash", "Произошла ошибка при проверке сайта!");
