@@ -2,19 +2,23 @@ package hexlet.code.controllers;
 
 import hexlet.code.domain.Url;
 import hexlet.code.domain.UrlCheck;
-import hexlet.code.domain.UrlCheckResponse;
 import hexlet.code.domain.query.QUrl;
 import hexlet.code.domain.query.QUrlCheck;
-import hexlet.code.service.UrlCheckServiceImpl;
 import io.javalin.core.validation.JavalinValidation;
 import io.javalin.core.validation.ValidationError;
 import io.javalin.core.validation.Validator;
 import io.javalin.http.Handler;
 import io.javalin.http.NotFoundResponse;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
+import org.eclipse.jetty.server.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class UrlController {
     public static Handler listUrls = ctx -> {
@@ -104,13 +108,33 @@ public class UrlController {
         }
 
         try {
-            UrlCheckResponse urlCheckResponse = new UrlCheckServiceImpl().check(url.getName());
+            HttpResponse<String> response = Unirest
+                    .get(url.getName())
+                    .asString();
+
+            String content = response.getBody();
+
+            int statusCode = response.getStatus();
+            String title = null;
+            String h1 = null;
+            String description = null;
+
+            if (response.getStatus() == Response.SC_OK) {
+                Document body = Jsoup.parse(content);
+                title = body.title();
+                h1 = body.selectFirst("h1") != null
+                        ? Objects.requireNonNull(body.selectFirst("h1")).text()
+                        : null;
+                description = body.selectFirst("meta[name=description]") != null
+                        ? Objects.requireNonNull(body.selectFirst("meta[name=description]")).attr("content")
+                        : null;
+            }
 
             UrlCheck urlCheck = new UrlCheck(
-                    urlCheckResponse.statusCode,
-                    urlCheckResponse.title,
-                    urlCheckResponse.h1,
-                    urlCheckResponse.description,
+                    statusCode,
+                    title,
+                    h1,
+                    description,
                     url
             );
             urlCheck.save();
