@@ -4,8 +4,6 @@ import hexlet.code.domain.Url;
 import hexlet.code.domain.UrlCheck;
 import hexlet.code.domain.query.QUrl;
 import hexlet.code.domain.query.QUrlCheck;
-import io.ebean.DB;
-import io.ebean.Database;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.BeforeAll;
@@ -27,7 +25,6 @@ class AppTest {
 
     private static Javalin app;
     private static String baseUrl;
-    private static Database database;
 
     protected static String getFixturePath(String fileName) {
         return Paths.get("src", "test", "resources", "fixtures", fileName).toAbsolutePath().toString();
@@ -39,7 +36,6 @@ class AppTest {
         app.start(0);
         int port = app.port();
         baseUrl = "http://localhost:" + port;
-        database = DB.getDefault();
     }
 
     @AfterAll
@@ -60,6 +56,22 @@ class AppTest {
 
         Url url1 = new Url(urlStr1);
         url1.save();
+        UrlCheck urlCheck1 = new UrlCheck(
+                403,
+                null,
+                null,
+                null,
+                url1
+        );
+        urlCheck1.save();
+        UrlCheck urlCheck2 = new UrlCheck(
+                200,
+                "title1",
+                "h1",
+                "description",
+                url1
+        );
+        urlCheck2.save();
 
         Url url2 = new Url(urlStr2);
         url2.save();
@@ -70,11 +82,9 @@ class AppTest {
         assertThat(response.getStatus()).isEqualTo(200);
 
         assertThat(content).contains(urlStr1);
-        assertThat(content).contains(urlStr2);
-    }
+        assertThat(content).contains(urlStr1);
 
-    @Test
-    void testNew() { // TODO: Дописать
+        assertThat(content).contains(urlCheck2.getStatusCode().toString());
     }
 
     @Test
@@ -128,7 +138,7 @@ class AppTest {
                 .post(baseUrl + "/urls/" + url.getId() + "/checks")
                 .asEmpty();
 
-        assertThat(response.getStatus()).isEqualTo(200);
+        assertThat(response.getStatus()).isEqualTo(302);
 
         UrlCheck urlCheck = new QUrlCheck()
                 .url.equalTo(url)

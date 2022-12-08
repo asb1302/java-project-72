@@ -4,6 +4,7 @@ import hexlet.code.domain.Url;
 import hexlet.code.domain.UrlCheck;
 import hexlet.code.domain.query.QUrl;
 import hexlet.code.domain.query.QUrlCheck;
+import io.ebean.PagedList;
 import io.javalin.core.validation.JavalinValidation;
 import io.javalin.core.validation.ValidationError;
 import io.javalin.core.validation.Validator;
@@ -19,16 +20,36 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class UrlController {
     public static Handler listUrls = ctx -> {
+        int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1) - 1;
+        int rowsPerPage = 10;
 
-        List<Url> urls = new QUrl()
+        PagedList<Url> pagedUrls = new QUrl()
+                .setFirstRow(page * rowsPerPage)
+                .setMaxRows(rowsPerPage)
                 .orderBy()
                 .createdAt.desc()
-                .findList();
+                .findPagedList();
+
+        int lastPage = pagedUrls.getTotalPageCount() + 1;
+
+        List<Integer> pages = IntStream
+                .range(1, lastPage)
+                .boxed()
+                .collect(Collectors.toList());
+
+        int currentPage = pagedUrls.getPageIndex() + 1;
+
+        List<Url> urls = pagedUrls.getList();
+
 
         ctx.attribute("urls", urls);
+        ctx.attribute("pages", pages);
+        ctx.attribute("currentPage", currentPage);
         ctx.render("urls/index.html");
     };
 
@@ -92,7 +113,12 @@ public class UrlController {
             throw new NotFoundResponse();
         }
 
+        List<UrlCheck> urlChecks = new QUrlCheck()
+                .url.equalTo(url)
+                .findList();
+
         ctx.attribute("url", url);
+        ctx.attribute("urlChecks", urlChecks);
         ctx.render("urls/show.html");
     };
 
@@ -139,17 +165,11 @@ public class UrlController {
             );
             urlCheck.save();
 
-            List<UrlCheck> urlChecks = new QUrlCheck()
-                    .url.equalTo(url)
-                    .findList();
-
-            ctx.attribute("url", url);
-            ctx.attribute("urlChecks", urlChecks);
-            ctx.render("urls/show.html");
+            ctx.redirect("/urls/" + url.getId());
         } catch (Exception e) {
             ctx.sessionAttribute("flash", "Произошла ошибка при проверке сайта!");
             ctx.sessionAttribute("flash-type", "danger");
-            ctx.redirect("/urls");
+            ctx.redirect("/urls/" + url.getId());
         }
     };
 }
