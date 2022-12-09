@@ -32,7 +32,7 @@ public class UrlController {
                 .setFirstRow(page * rowsPerPage)
                 .setMaxRows(rowsPerPage)
                 .orderBy()
-                .createdAt.desc()
+                .id.asc()
                 .findPagedList();
 
         int lastPage = pagedUrls.getTotalPageCount() + 1;
@@ -145,9 +145,10 @@ public class UrlController {
             String h1 = null;
             String description = null;
 
+            Document body = Jsoup.parse(content);
+            title = body.title();
+
             if (response.getStatus() == Response.SC_OK) {
-                Document body = Jsoup.parse(content);
-                title = body.title();
                 h1 = body.selectFirst("h1") != null
                         ? Objects.requireNonNull(body.selectFirst("h1")).text()
                         : null;
