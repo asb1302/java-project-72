@@ -115,6 +115,8 @@ public class UrlController {
 
         List<UrlCheck> urlChecks = new QUrlCheck()
                 .url.equalTo(url)
+                .orderBy()
+                .createdAt.desc()
                 .findList();
 
         ctx.attribute("url", url);
