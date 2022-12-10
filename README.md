@@ -15,6 +15,13 @@
 * Gradle
 * Make
 
+
+### Install
+
+```
+make install
+```
+
 ### Run
 
 ```
